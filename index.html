@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1920">
+<title>نور — التعليم التفاعلي</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#07090F;--s1:#0D1220;--s2:#131829;--s3:#1A2035;
+  --border:#1E2840;--text:#EEF4FF;--muted:#4A6180;--dim:#8AA0BC;
+  --gold:#FFB930;--green:#00CC6A;--blue:#2F8FFF;--purple:#9B6FFF;
+  --rose:#FF5E7E;--teal:#00BDB8;--orange:#FF7A35;
+  --focus:#FFB930;
+}
+html,body{width:1920px;height:1080px;overflow:hidden;font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);user-select:none}
+
+/* ═══ SCREENS ═══ */
+.screen{position:absolute;inset:0;display:none;flex-direction:column}
+.screen.active{display:flex}
+
+/* ═══ AMBIENT ═══ */
+.amb{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.amb-c{position:absolute;border-radius:50%;filter:blur(140px);opacity:.13}
+#ac1{width:900px;height:700px;top:-250px;right:-150px;background:radial-gradient(circle,#2F8FFF,transparent)}
+#ac2{width:700px;height:600px;bottom:-150px;left:-100px;background:radial-gradient(circle,#00CC6A,transparent)}
+#ac3{width:500px;height:500px;top:200px;left:700px;background:radial-gradient(circle,#9B6FFF,transparent);opacity:.08}
+
+/* ═══ HEADER BAR ═══ */
+.topbar{
+  position:relative;z-index:10;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:28px 72px;flex-shrink:0;
+  border-bottom:1px solid var(--border);
+  background:linear-gradient(180deg,rgba(7,9,15,.95) 0%,rgba(7,9,15,.6) 100%);
+  backdrop-filter:blur(20px);
+}
+.brand{display:flex;align-items:center;gap:18px}
+.brand-icon{width:52px;height:52px;border-radius:15px;background:linear-gradient(135deg,#2F8FFF,#00CC6A);display:flex;align-items:center;justify-content:center;font-size:26px;box-shadow:0 0 28px #2F8FFF44;flex-shrink:0}
+.brand-name{font-size:30px;font-weight:900;letter-spacing:-1px}
+.brand-name .g{background:linear-gradient(90deg,#2F8FFF,#00CC6A);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.brand-sub{font-size:13px;color:var(--muted);margin-top:1px}
+.breadcrumb{display:flex;align-items:center;gap:10px;font-size:18px;color:var(--muted)}
+.breadcrumb .sep{opacity:.4}
+.breadcrumb .cur{color:var(--text);font-weight:700}
+.topbar-end{display:flex;align-items:center;gap:20px}
+.clock{background:var(--s2);border:1px solid var(--border);border-radius:50px;padding:9px 24px;font-size:20px;font-weight:800;color:var(--gold);font-variant-numeric:tabular-nums}
+.back-btn{background:var(--s2);border:1px solid var(--border);border-radius:50px;padding:9px 24px;font-size:17px;font-weight:700;color:var(--dim);cursor:pointer;outline:none;transition:all .2s;display:none}
+.back-btn.show{display:flex;align-items:center;gap:8px}
+.back-btn:focus,.back-btn:hover{border-color:var(--focus);color:#fff;box-shadow:0 0 0 2px #FFB93022}
+
+/* ═══ SCREEN 1 — GRADE PICKER ═══ */
+#s-grade .inner{position:relative;z-index:1;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 80px;gap:48px}
+.grade-hero{text-align:center}
+.grade-hero h1{font-size:54px;font-weight:900;letter-spacing:-1.5px;margin-bottom:12px}
+.grade-hero h1 span{background:linear-gradient(90deg,#2F8FFF,#00CC6A);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.grade-hero p{font-size:20px;color:var(--dim);font-weight:500}
+.grade-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;width:100%}
+.grade-card{
+  background:var(--s2);border:2px solid var(--border);border-radius:28px;
+  padding:36px 24px;text-align:center;cursor:pointer;outline:none;
+  transition:all .22s cubic-bezier(.4,0,.2,1);position:relative;overflow:hidden;
+}
+.grade-card::before{content:'';position:absolute;inset:0;opacity:0;transition:opacity .3s}
+.grade-card:focus,.grade-card:hover{border-color:var(--focus);transform:translateY(-8px) scale(1.02);box-shadow:0 24px 60px #0009,0 0 0 3px #FFB93022;z-index:5}
+.grade-card:focus::before,.grade-card:hover::before{opacity:1}
+.grade-emoji{font-size:56px;margin-bottom:16px;display:block;filter:drop-shadow(0 4px 16px #0006)}
+.grade-label{font-size:20px;font-weight:900;margin-bottom:6px}
+.grade-sub{font-size:14px;color:var(--muted)}
+.grade-pill{display:inline-block;border-radius:50px;padding:4px 14px;font-size:12px;font-weight:700;margin-top:10px}
+
+/* KG colors */
+.kg{--ac:#FFB930} .grade-card.kg{background:linear-gradient(135deg,#1c1500,var(--s2))}
+.grade-card.kg:focus,.grade-card.kg:hover{border-color:#FFB930;box-shadow:0 24px 60px #0009,0 0 0 3px #FFB93022}
+.grade-card.kg .grade-pill{background:#FFB93022;color:#FFB930;border:1px solid #FFB93044}
+
+/* G1-G2 */
+.grade-card.g12{background:linear-gradient(135deg,#001a0d,var(--s2))}
+.grade-card.g12:focus,.grade-card.g12:hover{border-color:#00CC6A;box-shadow:0 24px 60px #0009,0 0 0 3px #00CC6A22}
+.grade-card.g12 .grade-pill{background:#00CC6A22;color:#00CC6A;border:1px solid #00CC6A44}
+
+/* G3-G4 */
+.grade-card.g34{background:linear-gradient(135deg,#001025,var(--s2))}
+.grade-card.g34:focus,.grade-card.g34:hover{border-color:#2F8FFF;box-shadow:0 24px 60px #0009,0 0 0 3px #2F8FFF22}
+.grade-card.g34 .grade-pill{background:#2F8FFF22;color:#2F8FFF;border:1px solid #2F8FFF44}
+
+/* G5-G6 */
+.grade-card.g56{background:linear-gradient(135deg,#100020,var(--s2))}
+.grade-card.g56:focus,.grade-card.g56:hover{border-color:#9B6FFF;box-shadow:0 24px 60px #0009,0 0 0 3px #9B6FFF22}
+.grade-card.g56 .grade-pill{background:#9B6FFF22;color:#9B6FFF;border:1px solid #9B6FFF44}
+
+/* ═══ SCREEN 2 — SUBJECT PICKER ═══ */
+#s-subject .inner{position:relative;z-index:1;flex:1;display:flex;align-items:center;justify-content:center;gap:60px;padding:0 120px}
+.subj-card{
+  flex:1;background:var(--s2);border:2px solid var(--border);
+  border-radius:36px;padding:60px 40px;text-align:center;
+  cursor:pointer;outline:none;position:relative;overflow:hidden;
+  transition:all .25s cubic-bezier(.4,0,.2,1);
+}
+.subj-card:focus,.subj-card:hover{transform:translateY(-10px) scale(1.02);box-shadow:0 32px 80px #000a;z-index:5}
+.subj-card.ar{background:linear-gradient(135deg,#1c1400,#0f1220)}
+.subj-card.ar:focus,.subj-card.ar:hover{border-color:#FFB930;box-shadow:0 32px 80px #000a,0 0 0 3px #FFB93022}
+.subj-card.en{background:linear-gradient(135deg,#001025,#0f1220)}
+.subj-card.en:focus,.subj-card.en:hover{border-color:#2F8FFF;box-shadow:0 32px 80px #000a,0 0 0 3px #2F8FFF22}
+.subj-emoji{font-size:110px;display:block;margin-bottom:28px;filter:drop-shadow(0 8px 24px #0008)}
+.subj-title{font-size:40px;font-weight:900;margin-bottom:10px}
+.subj-desc{font-size:18px;color:var(--dim);line-height:1.6}
+.subj-badge{display:inline-block;border-radius:50px;padding:8px 24px;font-size:15px;font-weight:700;margin-top:20px}
+.subj-card.ar .subj-badge{background:#FFB93022;color:#FFB930;border:1px solid #FFB93044}
+.subj-card.en .subj-badge{background:#2F8FFF22;color:#2F8FFF;border:1px solid #2F8FFF44}
+.subj-units{font-size:14px;color:var(--muted);margin-top:8px}
+
+/* ═══ SCREEN 3 — UNIT LIST ═══ */
+#s-units .inner{position:relative;z-index:1;flex:1;display:flex;gap:0;overflow:hidden}
+.units-sidebar{width:380px;background:var(--s1);border-left:1px solid var(--border);flex-shrink:0;display:flex;flex-direction:column;padding:32px 0;overflow-y:auto;scrollbar-width:none}
+.units-sidebar::-webkit-scrollbar{display:none}
+.sidebar-title{font-size:14px;font-weight:700;color:var(--muted);letter-spacing:2px;text-transform:uppercase;padding:0 32px 16px}
+.unit-btn{
+  display:flex;align-items:center;gap:18px;
+  padding:20px 32px;cursor:pointer;outline:none;
+  border:none;background:transparent;text-align:right;width:100%;
+  border-right:3px solid transparent;
+  transition:all .18s;position:relative;
+}
+.unit-btn:focus,.unit-btn:hover,.unit-btn.active{background:var(--s2);border-right-color:var(--focus)}
+.unit-btn.active{background:linear-gradient(90deg,var(--s3),var(--s2))}
+.unit-num{width:44px;height:44px;border-radius:12px;background:var(--s3);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:var(--muted);flex-shrink:0;transition:all .18s}
+.unit-btn.active .unit-num,.unit-btn:focus .unit-num{background:var(--focus);color:#000}
+.unit-info .unit-name{font-size:17px;font-weight:700;color:var(--text)}
+.unit-info .unit-meta{font-size:13px;color:var(--muted);margin-top:3px}
+.unit-check{margin-right:auto;font-size:18px;opacity:0}
+.unit-btn.done .unit-check{opacity:1}
+
+.lessons-area{flex:1;display:flex;flex-direction:column;overflow:hidden;padding:32px 48px}
+.lessons-header{margin-bottom:28px}
+.lessons-header h2{font-size:28px;font-weight:900;margin-bottom:6px}
+.lessons-header p{font-size:15px;color:var(--muted)}
+.lessons-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;overflow-y:auto;scrollbar-width:none;padding-bottom:60px}
+.lessons-grid::-webkit-scrollbar{display:none}
+.lesson-card{
+  background:var(--s2);border:2px solid var(--border);border-radius:22px;
+  overflow:hidden;cursor:pointer;outline:none;
+  transition:all .2s cubic-bezier(.4,0,.2,1);position:relative;
+}
+.lesson-card:focus,.lesson-card:hover{border-color:var(--focus);transform:translateY(-5px) scale(1.02);box-shadow:0 16px 48px #0008,0 0 0 3px #FFB93022;z-index:5}
+.lesson-thumb{height:150px;display:flex;align-items:center;justify-content:center;font-size:64px;position:relative;overflow:hidden}
+.lesson-thumb .play-ico{position:absolute;bottom:10px;left:10px;width:34px;height:34px;border-radius:50%;background:#fff2;backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;font-size:13px;opacity:0;transform:scale(.7);transition:all .2s}
+.lesson-card:focus .play-ico,.lesson-card:hover .play-ico{opacity:1;transform:scale(1)}
+.lesson-type{position:absolute;top:10px;right:10px;border-radius:50px;padding:3px 12px;font-size:11px;font-weight:800;backdrop-filter:blur(8px)}
+.lesson-type.vid{background:#2F8FFF22;color:#2F8FFF;border:1px solid #2F8FFF44}
+.lesson-type.int{background:#00CC6A22;color:#00CC6A;border:1px solid #00CC6A44}
+.lesson-type.quiz{background:#9B6FFF22;color:#9B6FFF;border:1px solid #9B6FFF44}
+.lesson-body{padding:14px 16px 18px}
+.lesson-title{font-size:16px;font-weight:800;margin-bottom:5px;line-height:1.35}
+.lesson-sub{font-size:13px;color:var(--muted)}
+.lesson-prog{height:3px;background:var(--border);margin:10px 16px 0;border-radius:2px}
+.lesson-prog .bar{height:100%;border-radius:2px;background:var(--green);width:0;transition:width .5s}
+
+/* ═══ SCREEN 4 — VIDEO PLAYER ═══ */
+#s-player{background:#000}
+#s-player .inner{position:relative;z-index:1;flex:1;display:flex;flex-direction:column}
+.video-wrap{flex:1;background:#000;display:flex;align-items:center;justify-content:center;position:relative}
+.video-placeholder{
+  width:100%;height:100%;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,#0a0f1a,#050810);
+  position:relative;overflow:hidden;
+}
+.vp-bg-emoji{font-size:300px;opacity:.06;position:absolute;filter:blur(4px)}
+.vp-content{position:relative;z-index:1;text-align:center}
+.vp-icon{font-size:100px;margin-bottom:24px;filter:drop-shadow(0 8px 32px #0009)}
+.vp-title{font-size:40px;font-weight:900;margin-bottom:12px}
+.vp-desc{font-size:18px;color:var(--dim);margin-bottom:40px}
+.vp-url-hint{font-size:14px;color:var(--muted);background:var(--s2);border:1px solid var(--border);border-radius:12px;padding:12px 24px;font-family:monospace}
+.play-big{
+  width:100px;height:100px;border-radius:50%;
+  background:linear-gradient(135deg,#2F8FFF,#00CC6A);
+  display:flex;align-items:center;justify-content:center;
+  font-size:40px;cursor:pointer;outline:none;border:none;
+  box-shadow:0 0 60px #2F8FFF55;margin:0 auto 24px;
+  transition:transform .2s,box-shadow .2s;
+}
+.play-big:focus,.play-big:hover{transform:scale(1.1);box-shadow:0 0 80px #2F8FFF77}
+
+/* IFRAME for youtube */
+#yt-frame{width:100%;height:100%;border:none;display:none}
+
+/* PLAYER CONTROLS */
+.player-bar{
+  position:absolute;bottom:0;left:0;right:0;
+  background:linear-gradient(0deg,rgba(0,0,0,.95) 0%,transparent 100%);
+  padding:60px 72px 32px;z-index:20;
+  display:flex;flex-direction:column;gap:16px;
+  transform:translateY(0);transition:transform .3s;
+}
+.player-bar.hidden{transform:translateY(100%)}
+.progress-wrap{display:flex;align-items:center;gap:16px}
+.progress-bar{flex:1;height:5px;background:#ffffff22;border-radius:3px;cursor:pointer}
+.progress-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,#2F8FFF,#00CC6A);width:0%;transition:width .3s}
+.time-label{font-size:16px;font-weight:700;color:var(--dim);font-variant-numeric:tabular-nums;white-space:nowrap}
+.player-controls{display:flex;align-items:center;gap:24px}
+.ctrl-btn{background:var(--s2);border:1px solid var(--border);border-radius:12px;padding:12px 22px;font-size:20px;cursor:pointer;outline:none;color:var(--dim);font-family:'Tajawal',sans-serif;font-weight:700;transition:all .15s}
+.ctrl-btn:focus,.ctrl-btn:hover{border-color:var(--focus);color:#fff;box-shadow:0 0 0 2px #FFB93022}
+.ctrl-btn.primary{background:linear-gradient(135deg,#2F8FFF,#00CC6A);border:none;color:#fff}
+.ctrl-spacer{flex:1}
+.lesson-title-bar{font-size:20px;font-weight:800;margin-bottom:4px}
+.lesson-title-sub{font-size:15px;color:var(--muted)}
+
+/* ═══ SCREEN 5 — QUIZ ═══ */
+#s-quiz .inner{position:relative;z-index:1;flex:1;display:flex;align-items:center;justify-content:center;padding:0 160px}
+.quiz-box{width:100%;max-width:1200px}
+.quiz-progress{display:flex;gap:8px;margin-bottom:36px}
+.quiz-dot{flex:1;height:6px;border-radius:3px;background:var(--border);transition:background .3s}
+.quiz-dot.done{background:var(--green)}
+.quiz-dot.active{background:var(--gold)}
+.quiz-q{font-size:36px;font-weight:900;margin-bottom:12px;line-height:1.3}
+.quiz-hint{font-size:17px;color:var(--muted);margin-bottom:40px}
+.quiz-opts{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.quiz-opt{
+  background:var(--s2);border:2px solid var(--border);border-radius:20px;
+  padding:24px 32px;font-size:20px;font-weight:700;
+  cursor:pointer;outline:none;text-align:right;
+  transition:all .2s cubic-bezier(.4,0,.2,1);
+  display:flex;align-items:center;gap:16px;
+  font-family:'Tajawal',sans-serif;color:var(--text);
+}
+.quiz-opt:focus,.quiz-opt:hover{border-color:var(--focus);background:var(--s3);transform:translateX(-4px);box-shadow:0 8px 32px #0006,0 0 0 2px #FFB93022}
+.quiz-opt.correct{border-color:var(--green);background:#00CC6A22;color:var(--green)}
+.quiz-opt.wrong{border-color:var(--rose);background:#FF5E7E22;color:var(--rose)}
+.opt-key{width:40px;height:40px;border-radius:10px;background:var(--s3);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:var(--muted);flex-shrink:0}
+.quiz-result{text-align:center;padding:60px 0}
+.result-emoji{font-size:100px;margin-bottom:24px}
+.result-title{font-size:48px;font-weight:900;margin-bottom:12px}
+.result-sub{font-size:20px;color:var(--dim);margin-bottom:40px}
+.result-score{font-size:72px;font-weight:900;background:linear-gradient(90deg,var(--gold),var(--green));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.result-actions{display:flex;gap:16px;justify-content:center;margin-top:32px}
+.rbtn{padding:16px 48px;border-radius:16px;font-size:20px;font-weight:800;font-family:'Tajawal',sans-serif;cursor:pointer;outline:none;border:none;transition:all .2s}
+.rbtn.primary{background:linear-gradient(135deg,#2F8FFF,#00CC6A);color:#fff;box-shadow:0 8px 32px #2F8FFF44}
+.rbtn.secondary{background:var(--s2);border:1px solid var(--border);color:var(--dim)}
+.rbtn:focus,.rbtn:hover{transform:scale(1.04)}
+
+/* ═══ HINT BAR ═══ */
+.hint-bar{position:fixed;bottom:0;left:0;right:0;padding:12px 72px;background:linear-gradient(0deg,var(--bg) 50%,transparent);display:flex;gap:28px;align-items:center;z-index:100}
+.hint{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--muted)}
+.key{background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:3px 10px;font-size:12px;color:var(--dim);font-weight:700}
+
+/* ═══ TRANSITIONS ═══ */
+.screen{opacity:0;transform:translateX(40px);transition:opacity .3s ease,transform .3s ease}
+.screen.active{opacity:1;transform:translateX(0)}
+</style>
+</head>
+<body>
+<div class="amb"><div class="amb-c" id="ac1"></div><div class="amb-c" id="ac2"></div><div class="amb-c" id="ac3"></div></div>
+
+<!-- ══════════ SCREEN 1: GRADE ══════════ -->
+<div class="screen active" id="s-grade">
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-icon">✨</div>
+      <div><div class="brand-name"><span class="g">نور</span></div><div class="brand-sub">التعليم التفاعلي</div></div>
+    </div>
+    <div class="topbar-end">
+      <div id="greeting" style="font-size:16px;color:var(--dim)">أهلاً 👋</div>
+      <div class="clock" id="clock">00:00</div>
+    </div>
+  </div>
+  <div class="inner">
+    <div class="grade-hero">
+      <h1>اختار <span>مرحلتك</span> الدراسية</h1>
+      <p>رحلة تعليمية ممتعة من روضة الأطفال حتى الصف السادس الابتدائي</p>
+    </div>
+    <div class="grade-grid" id="gradeGrid">
+      <div class="grade-card kg" tabindex="0" data-grade="KG1" data-label="روضة أولى">
+        <span class="grade-emoji">🌱</span>
+        <div class="grade-label">KG 1</div>
+        <div class="grade-sub">روضة أولى</div>
+        <span class="grade-pill">3–4 سنوات</span>
+      </div>
+      <div class="grade-card kg" tabindex="0" data-grade="KG2" data-label="روضة ثانية">
+        <span class="grade-emoji">🌼</span>
+        <div class="grade-label">KG 2</div>
+        <div class="grade-sub">روضة ثانية</div>
+        <span class="grade-pill">4–5 سنوات</span>
+      </div>
+      <div class="grade-card g12" tabindex="0" data-grade="G1" data-label="الصف الأول">
+        <span class="grade-emoji">📗</span>
+        <div class="grade-label">الصف الأول</div>
+        <div class="grade-sub">ابتدائي</div>
+        <span class="grade-pill">6–7 سنوات</span>
+      </div>
+      <div class="grade-card g12" tabindex="0" data-grade="G2" data-label="الصف الثاني">
+        <span class="grade-emoji">📘</span>
+        <div class="grade-label">الصف الثاني</div>
+        <div class="grade-sub">ابتدائي</div>
+        <span class="grade-pill">7–8 سنوات</span>
+      </div>
+      <div class="grade-card g34" tabindex="0" data-grade="G3" data-label="الصف الثالث">
+        <span class="grade-emoji">📙</span>
+        <div class="grade-label">الصف الثالث</div>
+        <div class="grade-sub">ابتدائي</div>
+        <span class="grade-pill">8–9 سنوات</span>
+      </div>
+      <div class="grade-card g34" tabindex="0" data-grade="G4" data-label="الصف الرابع">
+        <span class="grade-emoji">📒</span>
+        <div class="grade-label">الصف الرابع</div>
+        <div class="grade-sub">ابتدائي</div>
+        <span class="grade-pill">9–10 سنوات</span>
+      </div>
+      <div class="grade-card g56" tabindex="0" data-grade="G5" data-label="الصف الخامس">
+        <span class="grade-emoji">📕</span>
+        <div class="grade-label">الصف الخامس</div>
+        <div class="grade-sub">ابتدائي</div>
+        <span class="grade-pill">10–11 سنة</span>
+      </div>
+      <div class="grade-card g56" tabindex="0" data-grade="G6" data-label="الصف السادس">
+        <span class="grade-emoji">🎓</span>
+        <div class="grade-label">الصف السادس</div>
+        <div class="grade-sub">ابتدائي</div>
+        <span class="grade-pill">11–12 سنة</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ SCREEN 2: SUBJECT ══════════ -->
+<div class="screen" id="s-subject">
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-icon">✨</div>
+      <div><div class="brand-name"><span class="g">نور</span></div><div class="brand-sub">التعليم التفاعلي</div></div>
+    </div>
+    <div class="breadcrumb" id="bc2"><span>الرئيسية</span><span class="sep">›</span><span class="cur" id="bc2grade">KG1</span></div>
+    <div class="topbar-end">
+      <button class="back-btn show" id="back2" tabindex="0">‹ رجوع</button>
+      <div class="clock" id="clock2">00:00</div>
+    </div>
+  </div>
+  <div class="inner">
+    <div class="subj-card ar" tabindex="0" id="btnArabic">
+      <span class="subj-emoji">📖</span>
+      <div class="subj-title">اللغة العربية</div>
+      <div class="subj-desc">حروف · كلمات · قراءة · كتابة · نصوص · قواعد</div>
+      <span class="subj-badge">عربي</span>
+      <div class="subj-units" id="arUnits">8 وحدات · 40 درس</div>
+    </div>
+    <div class="subj-card en" tabindex="0" id="btnEnglish">
+      <span class="subj-emoji">🌍</span>
+      <div class="subj-title">English</div>
+      <div class="subj-desc">Alphabet · Vocabulary · Reading · Grammar · Writing</div>
+      <span class="subj-badge">English</span>
+      <div class="subj-units" id="enUnits">8 Units · 40 Lessons</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ SCREEN 3: UNITS ══════════ -->
+<div class="screen" id="s-units">
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-icon">✨</div>
+      <div><div class="brand-name"><span class="g">نور</span></div><div class="brand-sub">التعليم التفاعلي</div></div>
+    </div>
+    <div class="breadcrumb" id="bc3"></div>
+    <div class="topbar-end">
+      <button class="back-btn show" id="back3" tabindex="0">‹ رجوع</button>
+      <div class="clock" id="clock3">00:00</div>
+    </div>
+  </div>
+  <div class="inner">
+    <aside class="units-sidebar">
+      <div class="sidebar-title">الوحدات</div>
+      <div id="unitsList"></div>
+    </aside>
+    <section style="flex:1;display:flex;flex-direction:column;overflow:hidden;padding:32px 48px">
+      <div class="lessons-header">
+        <h2 id="unitTitle">اختار وحدة</h2>
+        <p id="unitDesc" style="font-size:15px;color:var(--muted)">اختار وحدة من القائمة على اليسار</p>
+      </div>
+      <div class="lessons-grid" id="lessonsGrid"></div>
+    </section>
+  </div>
+</div>
+
+<!-- ══════════ SCREEN 4: PLAYER ══════════ -->
+<div class="screen" id="s-player">
+  <div class="topbar" style="position:absolute;top:0;left:0;right:0;z-index:30;border-bottom:none;background:linear-gradient(180deg,rgba(0,0,0,.9) 0%,transparent 100%)">
+    <div class="brand">
+      <div class="brand-icon">✨</div>
+      <div><div class="brand-name"><span class="g">نور</span></div></div>
+    </div>
+    <div class="breadcrumb" id="bc4"></div>
+    <div class="topbar-end">
+      <button class="back-btn show" id="back4" tabindex="0">‹ رجوع</button>
+    </div>
+  </div>
+  <div class="inner">
+    <div class="video-wrap">
+      <iframe id="yt-frame" allowfullscreen allow="autoplay"></iframe>
+      <div class="video-placeholder" id="vidPlaceholder">
+        <div class="vp-bg-emoji" id="vpBgEmoji">📖</div>
+        <div class="vp-content">
+          <div class="vp-icon" id="vpIcon">📖</div>
+          <div class="vp-title" id="vpTitle">عنوان الدرس</div>
+          <div class="vp-desc" id="vpDesc">وصف الدرس</div>
+          <button class="play-big" id="playBig" tabindex="0">▶</button>
+          <div class="vp-url-hint" id="vpUrlHint">أضف رابط YouTube في DATA لتشغيل الفيديو</div>
+        </div>
+      </div>
+      <div class="player-bar" id="playerBar">
+        <div>
+          <div class="lesson-title-bar" id="pbTitle">عنوان الدرس</div>
+          <div class="lesson-title-sub" id="pbSub">المرحلة · المادة · الوحدة</div>
+        </div>
+        <div class="progress-wrap">
+          <div class="progress-bar"><div class="progress-fill" id="progFill"></div></div>
+          <div class="time-label" id="timeLabel">0:00 / 5:00</div>
+        </div>
+        <div class="player-controls">
+          <button class="ctrl-btn" id="ctrlPrev" tabindex="0">⏮ السابق</button>
+          <button class="ctrl-btn primary" id="ctrlPlay" tabindex="0">▶ تشغيل</button>
+          <button class="ctrl-btn" id="ctrlNext" tabindex="0">التالي ⏭</button>
+          <div class="ctrl-spacer"></div>
+          <button class="ctrl-btn" id="ctrlQuiz" tabindex="0" style="background:linear-gradient(135deg,#9B6FFF,#FF5E7E);border:none;color:#fff">📝 اختبار سريع</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ SCREEN 5: QUIZ ══════════ -->
+<div class="screen" id="s-quiz">
+  <div class="topbar" style="background:var(--s1)">
+    <div class="brand">
+      <div class="brand-icon" style="background:linear-gradient(135deg,#9B6FFF,#FF5E7E)">📝</div>
+      <div><div class="brand-name">اختبار سريع</div><div class="brand-sub" id="quizSubLabel">عنوان الدرس</div></div>
+    </div>
+    <div class="topbar-end">
+      <button class="back-btn show" id="back5" tabindex="0">‹ إلغاء</button>
+    </div>
+  </div>
+  <div class="inner">
+    <div class="quiz-box">
+      <div class="quiz-progress" id="quizProg"></div>
+      <div id="quizBody"></div>
+    </div>
+  </div>
+</div>
+
+<!-- HINT BAR -->
+<div class="hint-bar">
+  <div class="hint"><span class="key">←→↑↓</span> تنقل</div>
+  <div class="hint"><span class="key">OK / Enter</span> اختيار</div>
+  <div class="hint"><span class="key">Back</span> رجوع</div>
+</div>
+
+<script>
+// ════════════════════════════════════════════
+//  CURRICULUM DATA
+// ════════════════════════════════════════════
+const CURRICULUM = {
+  arabic: {
+    KG1:[
+      {id:'a-kg1-1',name:'الحروف الهجائية',desc:'تعرف على حروف اللغة العربية',lessons:[
+        {id:'l1',title:'حرف الألف أ',type:'vid',emoji:'أ',bg:'#1c1400',yt:'https://www.youtube.com/watch?v=QdBeUH0fgRg',quiz:[{q:'ما هو هذا الحرف؟',opts:['ألف','باء','تاء','ثاء'],ans:0},{q:'كلمة تبدأ بالألف',opts:['أسد','بيت','تفاح','جمل'],ans:0},{q:'كم شكل للألف؟',opts:['3 أشكال','2 شكل','4 أشكال','شكل واحد'],ans:0}]},
+        {id:'l2',title:'حرف الباء ب',type:'vid',emoji:'ب',bg:'#1c1400',yt:'',quiz:[{q:'ما هو هذا الحرف؟',opts:['باء','ألف','تاء','جيم'],ans:0},{q:'كلمة تبدأ بالباء',opts:['بيت','أسد','تفاح','جمل'],ans:0}]},
+        {id:'l3',title:'حرف التاء ت',type:'vid',emoji:'ت',bg:'#1c1400',yt:'',quiz:[{q:'ما الفرق بين الباء والتاء؟',opts:['عدد النقاط','شكل الحرف','الحجم','لا فرق'],ans:0}]},
+        {id:'l4',title:'حرف الجيم ج',type:'int',emoji:'ج',bg:'#0d1a00',yt:'',quiz:[{q:'كلمة فيها جيم',opts:['جمل','بيت','ألف','تمر'],ans:0}]},
+        {id:'l5',title:'حرف الدال د',type:'vid',emoji:'د',bg:'#1c1400',yt:'',quiz:[{q:'حرف الدال شكله يشبه...',opts:['نصف دائرة','مربع','مثلث','خط مستقيم'],ans:0}]},
+        {id:'l5b',title:'حرف الراء ر',type:'vid',emoji:'ر',bg:'#1c1400',yt:'',quiz:[{q:'كلمة فيها حرف الراء',opts:['رمان','بيت','تفاح','جمل'],ans:0}]},
+        {id:'l5c',title:'حرف الزاي ز',type:'vid',emoji:'ز',bg:'#1c1400',yt:''},
+        {id:'l5d',title:'حرف السين س',type:'vid',emoji:'س',bg:'#1c1400',yt:'',quiz:[{q:'كلمة فيها حرف السين',opts:['سمك','قمر','نجم','شمس'],ans:0}]},
+        {id:'l6',title:'مراجعة الحروف',type:'quiz',emoji:'✅',bg:'#001025',yt:'',quiz:[{q:'كم حرف في اللغة العربية؟',opts:['28 حرف','26 حرف','30 حرف','25 حرف'],ans:0},{q:'أول حرف في الهجاء',opts:['الألف','الباء','الجيم','الدال'],ans:0}]},
+      ]},
+      {id:'a-kg1-2',name:'الحركات',desc:'الفتحة والضمة والكسرة',lessons:[
+        {id:'l7',title:'الفتحة',type:'vid',emoji:'َ',bg:'#200a00',yt:'',quiz:[{q:'الفتحة تكون...',opts:['فوق الحرف','تحت الحرف','على اليمين','على اليسار'],ans:0}]},
+        {id:'l8',title:'الضمة',type:'vid',emoji:'ُ',bg:'#200a00',yt:''},
+        {id:'l9',title:'الكسرة',type:'vid',emoji:'ِ',bg:'#200a00',yt:''},
+        {id:'l10',title:'السكون والشدة',type:'vid',emoji:'ْ',bg:'#200a00',yt:''},
+      ]},
+      {id:'a-kg1-3',name:'كلمات بسيطة',desc:'تعرف على كلمات من حرفين وثلاثة',lessons:[
+        {id:'l11',title:'كلمات من حرفين',type:'int',emoji:'🔤',bg:'#001a00',yt:'',quiz:[{q:'كلمة من حرفين',opts:['يد','بيت','تفاح','جمل'],ans:0}]},
+        {id:'l12',title:'كلمات من ثلاثة حروف',type:'int',emoji:'✏️',bg:'#001a00',yt:'',quiz:[{q:'كلمة من ثلاثة حروف',opts:['قمر','يد','بيتنا','تفاحة'],ans:0}]},
+        {id:'l12b',title:'أسماء الحيوانات',type:'vid',emoji:'🐱',bg:'#001a00',yt:'',quiz:[{q:'اسم حيوان',opts:['قطة','كرسي','شجرة','باب'],ans:0}]},
+        {id:'l12c',title:'أسماء الفواكه',type:'vid',emoji:'🍌',bg:'#001a00',yt:'',quiz:[{q:'اسم فاكهة',opts:['موز','كرسي','قطة','باب'],ans:0}]},
+      ]},
+      {id:'a-kg1-4',name:'الأرقام بالعربي',desc:'تعلم الأرقام من 1 إلى 10',lessons:[
+        {id:'l13',title:'الأرقام 1-5',type:'vid',emoji:'1️⃣',bg:'#1a0010',yt:'',quiz:[{q:'كم رقم بعد الثلاثة؟',opts:['أربعة','اثنان','خمسة','واحد'],ans:0}]},
+        {id:'l14',title:'الأرقام 6-10',type:'vid',emoji:'🔟',bg:'#1a0010',yt:''},
+      ]},
+    ],
+    KG2:[
+      {id:'a-kg2-1',name:'الحروف كاملة',desc:'جميع حروف اللغة العربية',lessons:[
+        {id:'l20',title:'الحروف أ-ي',type:'vid',emoji:'أ',bg:'#1c1400',yt:''},
+        {id:'l21',title:'الحروف المتشابهة',type:'int',emoji:'🔍',bg:'#1c1400',yt:'',quiz:[{q:'ما الفرق بين ب و ت و ث؟',opts:['عدد النقاط','شكل الحرف','الحجم','اللون'],ans:0}]},
+        {id:'l22',title:'أشكال الحروف',type:'vid',emoji:'📝',bg:'#1c1400',yt:''},
+      ]},
+      {id:'a-kg2-2',name:'الجمل القصيرة',desc:'تكوين جمل من كلمات',lessons:[
+        {id:'l23',title:'جملة المبتدأ والخبر',type:'vid',emoji:'📖',bg:'#001a00',yt:''},
+        {id:'l24',title:'الجمل الفعلية',type:'int',emoji:'✍️',bg:'#001a00',yt:''},
+      ]},
+    ],
+    G1:[
+      {id:'a-g1-1',name:'القراءة',desc:'تعلم القراءة بطريقة صحيحة',lessons:[
+        {id:'l30',title:'قراءة المقاطع',type:'vid',emoji:'📖',bg:'#001025',yt:'',quiz:[{q:'كيف ننطق "بَا"؟',opts:['با','بِ','بُ','بْ'],ans:0}]},
+        {id:'l31',title:'قراءة الكلمات',type:'int',emoji:'🔤',bg:'#001025',yt:''},
+        {id:'l32',title:'قراءة الجمل',type:'vid',emoji:'📃',bg:'#001025',yt:''},
+        {id:'l33',title:'قراءة النصوص القصيرة',type:'vid',emoji:'📜',bg:'#001025',yt:''},
+      ]},
+      {id:'a-g1-2',name:'الكتابة',desc:'تعلم الكتابة الصحيحة',lessons:[
+        {id:'l34',title:'كتابة الحروف',type:'vid',emoji:'✏️',bg:'#0a001a',yt:''},
+        {id:'l35',title:'كتابة الكلمات',type:'int',emoji:'📝',bg:'#0a001a',yt:''},
+        {id:'l36',title:'التهجئة',type:'quiz',emoji:'🔡',bg:'#0a001a',yt:''},
+      ]},
+      {id:'a-g1-3',name:'التعبير',desc:'التعبير الشفهي والكتابي',lessons:[
+        {id:'l37',title:'وصف الصور',type:'vid',emoji:'🖼️',bg:'#1a0500',yt:''},
+        {id:'l38',title:'الحوار البسيط',type:'int',emoji:'💬',bg:'#1a0500',yt:''},
+      ]},
+    ],
+    G2:[
+      {id:'a-g2-1',name:'النصوص',desc:'قراءة وفهم النصوص',lessons:[
+        {id:'l40',title:'النص القصصي',type:'vid',emoji:'📖',bg:'#001025',yt:''},
+        {id:'l41',title:'فهم المقروء',type:'quiz',emoji:'❓',bg:'#001025',yt:'',quiz:[{q:'ما هو الهدف من قراءة النص؟',opts:['الفهم والاستيعاب','الحفظ فقط','التسلية فقط','لا شيء'],ans:0}]},
+        {id:'l42',title:'الأفكار الرئيسية',type:'int',emoji:'💡',bg:'#001025',yt:''},
+      ]},
+      {id:'a-g2-2',name:'القواعد',desc:'أساسيات قواعد اللغة العربية',lessons:[
+        {id:'l43',title:'المفرد والجمع',type:'vid',emoji:'📊',bg:'#0a001a',yt:'',quiz:[{q:'جمع كلمة "كتاب"',opts:['كتب','كتابات','أكتب','كتيب'],ans:0}]},
+        {id:'l44',title:'المذكر والمؤنث',type:'vid',emoji:'⚖️',bg:'#0a001a',yt:''},
+      ]},
+    ],
+    G3:[
+      {id:'a-g3-1',name:'النحو الأساسي',desc:'الجملة الاسمية والفعلية',lessons:[
+        {id:'l50',title:'المبتدأ والخبر',type:'vid',emoji:'📐',bg:'#001025',yt:'',quiz:[{q:'في جملة "الولد طويل"، المبتدأ هو',opts:['الولد','طويل','الجملة كلها','لا يوجد'],ans:0}]},
+        {id:'l51',title:'الفعل والفاعل',type:'vid',emoji:'⚡',bg:'#001025',yt:''},
+        {id:'l52',title:'المفعول به',type:'int',emoji:'🎯',bg:'#001025',yt:''},
+      ]},
+      {id:'a-g3-2',name:'الإملاء',desc:'قواعد الإملاء الصحيحة',lessons:[
+        {id:'l53',title:'الهمزة على الألف',type:'vid',emoji:'أ',bg:'#1a0500',yt:''},
+        {id:'l54',title:'التاء المربوطة والمفتوحة',type:'vid',emoji:'ة',bg:'#1a0500',yt:''},
+        {id:'l55',title:'الألف اللينة',type:'quiz',emoji:'ى',bg:'#1a0500',yt:''},
+      ]},
+    ],
+    G4:[
+      {id:'a-g4-1',name:'النحو المتوسط',desc:'الإعراب والبناء',lessons:[
+        {id:'l60',title:'علامات الإعراب',type:'vid',emoji:'📌',bg:'#001025',yt:''},
+        {id:'l61',title:'الضمائر',type:'vid',emoji:'👤',bg:'#001025',yt:'',quiz:[{q:'ضمير المتكلم المفرد',opts:['أنا','هو','أنت','هي'],ans:0}]},
+        {id:'l62',title:'الأسماء الموصولة',type:'int',emoji:'🔗',bg:'#001025',yt:''},
+      ]},
+      {id:'a-g4-2',name:'البلاغة',desc:'التشبيه والاستعارة',lessons:[
+        {id:'l63',title:'التشبيه',type:'vid',emoji:'🌟',bg:'#0a001a',yt:'',quiz:[{q:'في جملة "العلم نور"، الأسلوب المستخدم',opts:['استعارة','تشبيه','كناية','طباق'],ans:0}]},
+        {id:'l64',title:'الاستعارة',type:'vid',emoji:'🎭',bg:'#0a001a',yt:''},
+      ]},
+    ],
+    G5:[
+      {id:'a-g5-1',name:'النحو المتقدم',desc:'الجمل المركبة والأساليب',lessons:[
+        {id:'l70',title:'الجملة الشرطية',type:'vid',emoji:'⚙️',bg:'#001025',yt:'',quiz:[{q:'في "إذا درست نجحت"، أداة الشرط هي',opts:['إذا','درست','نجحت','لا يوجد'],ans:0}]},
+        {id:'l71',title:'أسلوب التعجب',type:'vid',emoji:'😲',bg:'#001025',yt:''},
+        {id:'l72',title:'أسلوب المدح والذم',type:'int',emoji:'👍',bg:'#001025',yt:''},
+      ]},
+      {id:'a-g5-2',name:'الأدب',desc:'القصة والشعر',lessons:[
+        {id:'l73',title:'عناصر القصة',type:'vid',emoji:'📚',bg:'#1a0500',yt:''},
+        {id:'l74',title:'الشعر العربي',type:'vid',emoji:'🎵',bg:'#1a0500',yt:''},
+      ]},
+    ],
+    G6:[
+      {id:'a-g6-1',name:'الإعراب التفصيلي',desc:'إعراب الجمل والمفردات',lessons:[
+        {id:'l80',title:'إعراب المبتدأ والخبر',type:'vid',emoji:'📐',bg:'#001025',yt:''},
+        {id:'l81',title:'إعراب الفعل والفاعل',type:'vid',emoji:'⚡',bg:'#001025',yt:''},
+        {id:'l82',title:'تمارين إعراب',type:'quiz',emoji:'📝',bg:'#001025',yt:'',quiz:[{q:'ما إعراب كلمة "الطالبُ" في "الطالبُ مجتهدٌ"؟',opts:['مبتدأ مرفوع','فاعل مرفوع','خبر مرفوع','مفعول به منصوب'],ans:0}]},
+      ]},
+      {id:'a-g6-2',name:'مراجعة شاملة',desc:'مراجعة كل ما تعلمناه',lessons:[
+        {id:'l83',title:'مراجعة النحو',type:'quiz',emoji:'✅',bg:'#001a00',yt:''},
+        {id:'l84',title:'مراجعة الإملاء',type:'quiz',emoji:'✅',bg:'#001a00',yt:''},
+        {id:'l85',title:'مراجعة البلاغة',type:'quiz',emoji:'✅',bg:'#001a00',yt:''},
+      ]},
+    ],
+  },
+  english: {
+    KG1:[
+      {id:'e-kg1-1',name:'The Alphabet',desc:'Learn A to Z letters',lessons:[
+        {id:'e1',title:'Letter A & B',type:'vid',emoji:'🔤',bg:'#001025',yt:'https://www.youtube.com/watch?v=hq3yfQnllfQ',quiz:[{q:'Which letter comes first?',opts:['A','B','C','D'],ans:0},{q:'A is for...',opts:['Apple','Ball','Cat','Dog'],ans:0}]},
+        {id:'e2',title:'Letter C & D',type:'vid',emoji:'🅲',bg:'#001025',yt:''},
+        {id:'e3',title:'Letter E & F',type:'int',emoji:'🅴',bg:'#001025',yt:'',quiz:[{q:'E is for...',opts:['Elephant','Fish','Apple','Ball'],ans:0}]},
+        {id:'e4',title:'Letters G to L',type:'vid',emoji:'🔡',bg:'#001025',yt:'',quiz:[{q:'Which letter is between H and J?',opts:['I','K','G','L'],ans:0}]},
+        {id:'e5',title:'Letters M to R',type:'vid',emoji:'🅼',bg:'#001025',yt:''},
+        {id:'e5b',title:'Letters S & T',type:'vid',emoji:'🅂',bg:'#001025',yt:'',quiz:[{q:'S is for...',opts:['Sun','Moon','Star','Tree'],ans:0}]},
+        {id:'e6',title:'Letters U to Z',type:'vid',emoji:'🅢',bg:'#001025',yt:''},
+        {id:'e7',title:'Alphabet Song',type:'vid',emoji:'🎵',bg:'#001025',yt:'https://www.youtube.com/watch?v=ezmsrB59mj8'},
+      ]},
+      {id:'e-kg1-2',name:'Numbers',desc:'Count from 1 to 20',lessons:[
+        {id:'e8',title:'Numbers 1–5',type:'vid',emoji:'🔢',bg:'#001a00',yt:'',quiz:[{q:'How many apples? 🍎🍎🍎',opts:['3','2','4','5'],ans:0}]},
+        {id:'e9',title:'Numbers 6–10',type:'vid',emoji:'🔢',bg:'#001a00',yt:''},
+        {id:'e10',title:'Numbers 11–20',type:'int',emoji:'🔢',bg:'#001a00',yt:''},
+      ]},
+      {id:'e-kg1-3',name:'Colors & Shapes',desc:'Learn colors and basic shapes',lessons:[
+        {id:'e11',title:'Primary Colors',type:'vid',emoji:'🎨',bg:'#100010',yt:'',quiz:[{q:'What color is the sky?',opts:['Blue','Red','Green','Yellow'],ans:0}]},
+        {id:'e12',title:'Shapes',type:'int',emoji:'🔺',bg:'#100010',yt:'',quiz:[{q:'A shape with 3 sides is a...',opts:['Triangle','Circle','Square','Star'],ans:0}]},
+      ]},
+      {id:'e-kg1-4',name:'Animals & Food',desc:'Learn names of animals and food',lessons:[
+        {id:'e13',title:'Farm Animals',type:'vid',emoji:'🐄',bg:'#001a10',yt:'',quiz:[{q:'A cow says...',opts:['Moo','Woof','Meow','Baa'],ans:0}]},
+        {id:'e14',title:'Fruits',type:'vid',emoji:'🍎',bg:'#001a10',yt:'',quiz:[{q:'Which one is a fruit?',opts:['Apple','Chair','Table','Door'],ans:0}]},
+      ]},
+    ],
+    KG2:[
+      {id:'e-kg2-1',name:'Phonics',desc:'Letter sounds and blending',lessons:[
+        {id:'e20',title:'Short Vowels',type:'vid',emoji:'🔊',bg:'#001025',yt:'',quiz:[{q:'What sound does "A" make in "cat"?',opts:['Short A','Long A','Silent','Other'],ans:0}]},
+        {id:'e21',title:'Consonant Sounds',type:'vid',emoji:'📢',bg:'#001025',yt:''},
+        {id:'e22',title:'Blending CVC Words',type:'int',emoji:'🔗',bg:'#001025',yt:''},
+      ]},
+      {id:'e-kg2-2',name:'Sight Words',desc:'High-frequency words',lessons:[
+        {id:'e23',title:'Sight Words Set 1',type:'vid',emoji:'👁️',bg:'#1a0500',yt:''},
+        {id:'e24',title:'Sight Words Set 2',type:'int',emoji:'👁️',bg:'#1a0500',yt:''},
+      ]},
+    ],
+    G1:[
+      {id:'e-g1-1',name:'Reading',desc:'Reading words and sentences',lessons:[
+        {id:'e30',title:'CVC Words',type:'vid',emoji:'📖',bg:'#001025',yt:'',quiz:[{q:'"Cat" has how many letters?',opts:['3','2','4','5'],ans:0}]},
+        {id:'e31',title:'Short Sentences',type:'vid',emoji:'📝',bg:'#001025',yt:''},
+        {id:'e32',title:'Reading Comprehension',type:'int',emoji:'🧠',bg:'#001025',yt:''},
+      ]},
+      {id:'e-g1-2',name:'Vocabulary',desc:'Animals, food, family words',lessons:[
+        {id:'e33',title:'Animals',type:'vid',emoji:'🐶',bg:'#001a00',yt:'',quiz:[{q:'What sound does a dog make?',opts:['Woof','Meow','Moo','Baa'],ans:0}]},
+        {id:'e34',title:'Food & Drinks',type:'vid',emoji:'🍎',bg:'#001a00',yt:''},
+        {id:'e35',title:'Family Members',type:'int',emoji:'👨‍👩‍👧',bg:'#001a00',yt:''},
+      ]},
+    ],
+    G2:[
+      {id:'e-g2-1',name:'Grammar Basics',desc:'Nouns, verbs, adjectives',lessons:[
+        {id:'e40',title:'Nouns',type:'vid',emoji:'📌',bg:'#001025',yt:'',quiz:[{q:'Which is a noun?',opts:['Dog','Run','Big','Quickly'],ans:0}]},
+        {id:'e41',title:'Verbs',type:'vid',emoji:'⚡',bg:'#001025',yt:''},
+        {id:'e42',title:'Adjectives',type:'int',emoji:'🎨',bg:'#001025',yt:''},
+      ]},
+      {id:'e-g2-2',name:'Writing',desc:'Sentences and paragraphs',lessons:[
+        {id:'e43',title:'Writing Simple Sentences',type:'vid',emoji:'✏️',bg:'#0a001a',yt:''},
+        {id:'e44',title:'Punctuation',type:'vid',emoji:'.',bg:'#0a001a',yt:'',quiz:[{q:'Which punctuation ends a question?',opts:['?','.',',','!'],ans:0}]},
+      ]},
+    ],
+    G3:[
+      {id:'e-g3-1',name:'Reading Fluency',desc:'Fluent reading and comprehension',lessons:[
+        {id:'e50',title:'Reading Stories',type:'vid',emoji:'📚',bg:'#001025',yt:''},
+        {id:'e51',title:'Main Idea & Details',type:'int',emoji:'💡',bg:'#001025',yt:'',quiz:[{q:'The main idea is...',opts:['The most important point','A small detail','The title','The last sentence'],ans:0}]},
+        {id:'e52',title:'Story Elements',type:'vid',emoji:'🎭',bg:'#001025',yt:''},
+      ]},
+      {id:'e-g3-2',name:'Grammar',desc:'Tenses and sentence structure',lessons:[
+        {id:'e53',title:'Present Tense',type:'vid',emoji:'⏰',bg:'#0a001a',yt:'',quiz:[{q:'He ___ to school every day.',opts:['goes','went','going','go'],ans:0}]},
+        {id:'e54',title:'Past Tense',type:'vid',emoji:'⏪',bg:'#0a001a',yt:''},
+        {id:'e55',title:'Future Tense',type:'int',emoji:'⏩',bg:'#0a001a',yt:''},
+      ]},
+    ],
+    G4:[
+      {id:'e-g4-1',name:'Advanced Grammar',desc:'Complex sentences and clauses',lessons:[
+        {id:'e60',title:'Compound Sentences',type:'vid',emoji:'🔗',bg:'#001025',yt:''},
+        {id:'e61',title:'Conjunctions',type:'vid',emoji:'➕',bg:'#001025',yt:'',quiz:[{q:'I like dogs ___ I have a cat.',opts:['but','and also','because of','since'],ans:0}]},
+        {id:'e62',title:'Pronouns',type:'int',emoji:'👤',bg:'#001025',yt:''},
+      ]},
+      {id:'e-g4-2',name:'Writing Skills',desc:'Paragraphs and essays',lessons:[
+        {id:'e63',title:'Paragraph Writing',type:'vid',emoji:'📄',bg:'#1a0500',yt:''},
+        {id:'e64',title:'Descriptive Writing',type:'int',emoji:'🖊️',bg:'#1a0500',yt:''},
+      ]},
+    ],
+    G5:[
+      {id:'e-g5-1',name:'Literature',desc:'Short stories and poems',lessons:[
+        {id:'e70',title:'Reading Short Stories',type:'vid',emoji:'📖',bg:'#001025',yt:''},
+        {id:'e71',title:'Poetry',type:'vid',emoji:'🎵',bg:'#001025',yt:'',quiz:[{q:'What is rhyme?',opts:['Words that sound alike','Words that look alike','Long words','Short words'],ans:0}]},
+        {id:'e72',title:'Drama & Dialogue',type:'int',emoji:'🎭',bg:'#001025',yt:''},
+      ]},
+      {id:'e-g5-2',name:'Vocabulary Building',desc:'Synonyms, antonyms, prefixes',lessons:[
+        {id:'e73',title:'Synonyms & Antonyms',type:'vid',emoji:'⚖️',bg:'#0a001a',yt:'',quiz:[{q:'Antonym of "hot"',opts:['cold','warm','cool','freezing'],ans:0}]},
+        {id:'e74',title:'Prefixes & Suffixes',type:'int',emoji:'🔧',bg:'#0a001a',yt:''},
+      ]},
+    ],
+    G6:[
+      {id:'e-g6-1',name:'Advanced Writing',desc:'Essays and reports',lessons:[
+        {id:'e80',title:'Essay Writing',type:'vid',emoji:'📝',bg:'#001025',yt:''},
+        {id:'e81',title:'Report Writing',type:'vid',emoji:'📊',bg:'#001025',yt:''},
+        {id:'e82',title:'Persuasive Writing',type:'int',emoji:'💬',bg:'#001025',yt:''},
+      ]},
+      {id:'e-g6-2',name:'Comprehensive Review',desc:'Full review of all topics',lessons:[
+        {id:'e83',title:'Grammar Review',type:'quiz',emoji:'✅',bg:'#001a00',yt:'',quiz:[{q:'Which is correct?',opts:['He don\'t like apples','He doesn\'t like apples','He not like apples','He no like apples'],ans:1}]},
+        {id:'e84',title:'Writing Review',type:'quiz',emoji:'✅',bg:'#001a00',yt:''},
+      ]},
+    ],
+  }
+};
+
+// ════════════════════════════════════════════
+//  STATE
+// ════════════════════════════════════════════
+let state={grade:null,subject:null,units:[],activeUnit:0,activeLesson:null,quizData:[],quizIdx:0,quizScore:0,playing:false,progInterval:null,progSec:0};
+
+// ════════════════════════════════════════════
+//  NAVIGATION
+// ════════════════════════════════════════════
+function goTo(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ════════════════════════════════════════════
+//  CLOCK
+// ════════════════════════════════════════════
+function tick(){
+  const now=new Date(),h=String(now.getHours()).padStart(2,'0'),m=String(now.getMinutes()).padStart(2,'0'),t=h+':'+m;
+  document.querySelectorAll('.clock,[id^=clock]').forEach(el=>el.textContent=t);
+  const hr=now.getHours();
+  document.getElementById('greeting').textContent=hr<12?'صباح الخير 🌅':hr<17?'مساء الخير ☀️':'مساء النور 🌙';
+}
+tick();setInterval(tick,30000);
+
+// ════════════════════════════════════════════
+//  SCREEN 1 → 2  (Grade selection)
+// ════════════════════════════════════════════
+document.querySelectorAll('.grade-card').forEach(card=>{
+  card.addEventListener('click',()=>selectGrade(card.dataset.grade,card.dataset.label));
+  card.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' ')selectGrade(card.dataset.grade,card.dataset.label)});
+});
+function selectGrade(g,label){
+  state.grade=g;
+  document.getElementById('bc2grade').textContent=label;
+  // Update unit counts
+  const ar=CURRICULUM.arabic[g]||[];const en=CURRICULUM.english[g]||[];
+  const arL=ar.reduce((s,u)=>s+u.lessons.length,0);
+  const enL=en.reduce((s,u)=>s+u.lessons.length,0);
+  document.getElementById('arUnits').textContent=`${ar.length} وحدات · ${arL} درس`;
+  document.getElementById('enUnits').textContent=`${en.length} Units · ${enL} Lessons`;
+  goTo('s-subject');
+  setTimeout(()=>document.getElementById('btnArabic').focus(),100);
+}
+
+// ════════════════════════════════════════════
+//  SCREEN 2 → 3  (Subject selection)
+// ════════════════════════════════════════════
+document.getElementById('btnArabic').addEventListener('click',()=>selectSubject('arabic'));
+document.getElementById('btnEnglish').addEventListener('click',()=>selectSubject('english'));
+document.getElementById('btnArabic').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' ')selectSubject('arabic')});
+document.getElementById('btnEnglish').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' ')selectSubject('english')});
+
+function selectSubject(sub){
+  state.subject=sub;
+  state.units=CURRICULUM[sub][state.grade]||[];
+  state.activeUnit=0;
+  const subLabel=sub==='arabic'?'اللغة العربية':'English';
+  const gradeLabel=document.getElementById('bc2grade').textContent;
+  document.getElementById('bc3').innerHTML=`<span>${gradeLabel}</span><span class="sep">›</span><span class="cur">${subLabel}</span>`;
+  buildUnitsList();
+  goTo('s-units');
+  setTimeout(()=>{const f=document.querySelector('.unit-btn');if(f)f.focus()},100);
+}
+
+// ════════════════════════════════════════════
+//  SCREEN 3: UNITS & LESSONS
+// ════════════════════════════════════════════
+function buildUnitsList(){
+  const list=document.getElementById('unitsList');
+  list.innerHTML='';
+  state.units.forEach((u,i)=>{
+    const btn=document.createElement('button');
+    btn.className='unit-btn'+(i===0?' active':'');
+    btn.tabIndex=0;
+    btn.innerHTML=`
+      <div class="unit-num">${i+1}</div>
+      <div class="unit-info">
+        <div class="unit-name">${u.name}</div>
+        <div class="unit-meta">${u.lessons.length} درس · ${u.desc}</div>
+      </div>
+      <div class="unit-check">✓</div>
+    `;
+    btn.addEventListener('click',()=>selectUnit(i));
+    btn.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' ')selectUnit(i)});
+    list.appendChild(btn);
+  });
+  if(state.units.length>0)selectUnit(0,true);
+}
+
+function selectUnit(i,silent){
+  state.activeUnit=i;
+  document.querySelectorAll('.unit-btn').forEach((b,j)=>b.classList.toggle('active',j===i));
+  const u=state.units[i];
+  document.getElementById('unitTitle').textContent=u.name;
+  document.getElementById('unitDesc').textContent=u.desc;
+  buildLessons(u.lessons);
+  if(!silent){const first=document.querySelector('.lesson-card');if(first)first.focus();}
+}
+
+function buildLessons(lessons){
+  const grid=document.getElementById('lessonsGrid');
+  grid.innerHTML='';
+  lessons.forEach(l=>{
+    const card=document.createElement('div');
+    card.className='lesson-card';
+    card.tabIndex=0;
+    const typeLabel=l.type==='vid'?'فيديو':l.type==='int'?'تفاعلي':'اختبار';
+    const typeClass=l.type==='vid'?'vid':l.type==='int'?'int':'quiz';
+    card.innerHTML=`
+      <div class="lesson-thumb" style="background:${l.bg}">
+        <span style="font-size:64px;z-index:1;position:relative">${l.emoji}</span>
+        <div class="play-ico">▶</div>
+        <div class="lesson-type ${typeClass}">${typeLabel}</div>
+      </div>
+      <div class="lesson-body">
+        <div class="lesson-title">${l.title}</div>
+        <div class="lesson-sub">${l.type==='vid'?'▶ فيديو تعليمي':l.type==='int'?'🎮 نشاط تفاعلي':'📝 اختبار تقييمي'}</div>
+      </div>
+      <div class="lesson-prog"><div class="bar" style="width:${l.done?100:0}%"></div></div>
+    `;
+    card.addEventListener('click',()=>openLesson(l));
+    card.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' ')openLesson(l)});
+    grid.appendChild(card);
+  });
+}
+
+// ════════════════════════════════════════════
+//  SCREEN 4: PLAYER
+// ════════════════════════════════════════════
+function openLesson(l){
+  state.activeLesson=l;
+  clearInterval(state.progInterval);
+  state.progSec=0;state.playing=false;
+  document.getElementById('vpIcon').textContent=l.emoji;
+  document.getElementById('vpBgEmoji').textContent=l.emoji;
+  document.getElementById('vpTitle').textContent=l.title;
+  document.getElementById('vpDesc').textContent=l.type==='vid'?'اضغط تشغيل لمشاهدة الفيديو':l.type==='int'?'نشاط تفاعلي — اضغط للبدء':'اختبار سريع — اضغط للبدء';
+  document.getElementById('pbTitle').textContent=l.title;
+  const g=state.grade,sub=state.subject==='arabic'?'عربي':'English';
+  document.getElementById('pbSub').textContent=`${g} · ${sub} · ${state.units[state.activeUnit].name}`;
+  document.getElementById('bc4').innerHTML=`<span>${g}</span><span class="sep">›</span><span>${sub}</span><span class="sep">›</span><span class="cur">${l.title}</span>`;
+  document.getElementById('progFill').style.width='0%';
+  document.getElementById('timeLabel').textContent='0:00 / 5:00';
+
+  // YouTube or placeholder
+  const frame=document.getElementById('yt-frame');
+  const ph=document.getElementById('vidPlaceholder');
+  if(l.yt){
+    const vid=l.yt.includes('youtu.be/')?l.yt.split('youtu.be/')[1]:l.yt.includes('v=')?l.yt.split('v=')[1].split('&')[0]:'';
+    if(vid){frame.src=`https://www.youtube.com/embed/${vid}?autoplay=1&rel=0`;frame.style.display='block';ph.style.display='none';}
+  } else {
+    frame.src='';frame.style.display='none';ph.style.display='flex';
+    document.getElementById('vpUrlHint').textContent=l.yt===''?'أضف رابط YouTube في الـ DATA لتشغيل الفيديو':'';
+  }
+  goTo('s-player');
+  setTimeout(()=>document.getElementById('playBig').focus(),100);
+}
+
+// Simulated progress
+document.getElementById('playBig').addEventListener('click',startProgress);
+document.getElementById('ctrlPlay').addEventListener('click',()=>{state.playing?pauseProgress():startProgress()});
+
+function startProgress(){
+  if(state.playing)return;
+  state.playing=true;
+  document.getElementById('ctrlPlay').textContent='⏸ إيقاف';
+  state.progInterval=setInterval(()=>{
+    state.progSec++;
+    const total=300,pct=Math.min((state.progSec/total)*100,100);
+    document.getElementById('progFill').style.width=pct+'%';
+    const m=Math.floor(state.progSec/60),s=state.progSec%60;
+    document.getElementById('timeLabel').textContent=`${m}:${String(s).padStart(2,'0')} / 5:00`;
+    if(pct>=100){clearInterval(state.progInterval);state.playing=false;document.getElementById('ctrlPlay').textContent='▶ تشغيل';}
+  },1000);
+}
+function pauseProgress(){
+  clearInterval(state.progInterval);state.playing=false;
+  document.getElementById('ctrlPlay').textContent='▶ تشغيل';
+}
+
+document.getElementById('ctrlQuiz').addEventListener('click',()=>{
+  const l=state.activeLesson;
+  if(l&&l.quiz&&l.quiz.length>0)startQuiz(l.quiz,l.title);
+  else startQuiz(defaultQuiz(),l?l.title:'مراجعة');
+});
+
+function defaultQuiz(){
+  return[
+    {q:'هل استمتعت بالدرس؟',opts:['نعم جداً','نعم','قليلاً','لا'],ans:0},
+    {q:'هل فهمت الدرس؟',opts:['فهمت كل شيء','فهمت معظمه','فهمت القليل','لم أفهم'],ans:0},
+  ];
+}
+
+// ════════════════════════════════════════════
+//  SCREEN 5: QUIZ
+// ════════════════════════════════════════════
+function startQuiz(data,title){
+  state.quizData=data;state.quizIdx=0;state.quizScore=0;
+  document.getElementById('quizSubLabel').textContent=title;
+  // Build dots
+  const prog=document.getElementById('quizProg');
+  prog.innerHTML=data.map((_,i)=>`<div class="quiz-dot" id="qd${i}"></div>`).join('');
+  document.getElementById('qd0').classList.add('active');
+  showQuestion(0);
+  goTo('s-quiz');
+}
+
+function showQuestion(i){
+  const q=state.quizData[i];
+  const body=document.getElementById('quizBody');
+  const keys=['أ','ب','ج','د'];
+  body.innerHTML=`
+    <div class="quiz-q">${q.q}</div>
+    <div class="quiz-hint">اختار الإجابة الصحيحة</div>
+    <div class="quiz-opts">
+      ${q.opts.map((o,j)=>`
+        <button class="quiz-opt" tabindex="0" data-idx="${j}">
+          <span class="opt-key">${keys[j]}</span>
+          ${o}
+        </button>
+      `).join('')}
+    </div>
+  `;
+  body.querySelectorAll('.quiz-opt').forEach((btn,j)=>{
+    btn.addEventListener('click',()=>answerQuiz(i,j));
+    btn.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' ')answerQuiz(i,j)});
+  });
+  setTimeout(()=>{const f=body.querySelector('.quiz-opt');if(f)f.focus()},100);
+}
+
+function answerQuiz(qi,chosen){
+  const q=state.quizData[qi];
+  const opts=document.querySelectorAll('.quiz-opt');
+  opts.forEach((b,j)=>{
+    b.classList.toggle('correct',j===q.ans);
+    b.classList.toggle('wrong',j===chosen&&chosen!==q.ans);
+    b.disabled=true;
+  });
+  if(chosen===q.ans)state.quizScore++;
+  document.getElementById('qd'+qi).classList.remove('active');
+  document.getElementById('qd'+qi).classList.add('done');
+  setTimeout(()=>{
+    if(qi+1<state.quizData.length){
+      state.quizIdx++;
+      document.getElementById('qd'+(qi+1)).classList.add('active');
+      showQuestion(qi+1);
+    } else showResult();
+  },1200);
+}
+
+function showResult(){
+  const total=state.quizData.length,sc=state.quizScore;
+  const pct=Math.round((sc/total)*100);
+  const emoji=pct===100?'🏆':pct>=70?'⭐':pct>=40?'📚':'💪';
+  const msg=pct===100?'ممتاز! أنت نجم!':pct>=70?'أحسنت! استمر!':pct>=40?'كويس، تدرب أكتر':'حاول مرة تانية!';
+  document.getElementById('quizBody').innerHTML=`
+    <div class="quiz-result">
+      <div class="result-emoji">${emoji}</div>
+      <div class="result-title">${msg}</div>
+      <div class="result-sub">أجبت صح على ${sc} من ${total} سؤال</div>
+      <div class="result-score">${pct}%</div>
+      <div class="result-actions">
+        <button class="rbtn primary" id="rNext" tabindex="0">التالي ›</button>
+        <button class="rbtn secondary" id="rRetry" tabindex="0">🔄 إعادة</button>
+        <button class="rbtn secondary" id="rBack" tabindex="0">‹ الدروس</button>
+      </div>
+    </div>
+  `;
+  document.getElementById('rNext').addEventListener('click',()=>goTo('s-units'));
+  document.getElementById('rRetry').addEventListener('click',()=>startQuiz(state.quizData,state.activeLesson?.title||''));
+  document.getElementById('rBack').addEventListener('click',()=>goTo('s-units'));
+  setTimeout(()=>document.getElementById('rNext').focus(),100);
+}
+
+// ════════════════════════════════════════════
+//  BACK BUTTONS
+// ════════════════════════════════════════════
+document.getElementById('back2').addEventListener('click',()=>goTo('s-grade'));
+document.getElementById('back2').addEventListener('keydown',e=>{if(e.key==='Enter')goTo('s-grade')});
+document.getElementById('back3').addEventListener('click',()=>goTo('s-subject'));
+document.getElementById('back3').addEventListener('keydown',e=>{if(e.key==='Enter')goTo('s-subject')});
+document.getElementById('back4').addEventListener('click',()=>{clearInterval(state.progInterval);document.getElementById('yt-frame').src='';goTo('s-units')});
+document.getElementById('back4').addEventListener('keydown',e=>{if(e.key==='Enter'){clearInterval(state.progInterval);document.getElementById('yt-frame').src='';goTo('s-units')}});
+document.getElementById('back5').addEventListener('click',()=>goTo('s-player'));
+document.getElementById('back5').addEventListener('keydown',e=>{if(e.key==='Enter')goTo('s-player')});
+document.getElementById('ctrlPrev').addEventListener('click',()=>{clearInterval(state.progInterval);document.getElementById('yt-frame').src='';goTo('s-units')});
+document.getElementById('ctrlNext').addEventListener('click',()=>{clearInterval(state.progInterval);document.getElementById('yt-frame').src='';goTo('s-units')});
+
+document.addEventListener('keydown',e=>{
+  const active=document.querySelector('.screen.active');
+  if(!active)return;
+  if(e.key==='Backspace'||e.key==='GoBack'){
+    const id=active.id;
+    if(id==='s-subject')goTo('s-grade');
+    else if(id==='s-units')goTo('s-subject');
+    else if(id==='s-player'){clearInterval(state.progInterval);document.getElementById('yt-frame').src='';goTo('s-units');}
+    else if(id==='s-quiz')goTo('s-player');
+  }
+});
+</script>
+</body>
+</html>
