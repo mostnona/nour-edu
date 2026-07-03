@@ -1,0 +1,180 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --void: #07090F;
+    --surface: #0D1220;
+    --surface-2: #131829;
+    --border-color: #1E2840;
+    --text: #EEF4FF;
+    --text-muted: #5C7A99;
+    --blue: #3B9EFF;
+    --green: #00D96F;
+    --gold: #FFBE3D;
+    --purple: #B464FF;
+    --rose: #FF5078;
+    --teal: #00C9C9;
+
+    --background: 220 30% 3%;
+    --foreground: 220 30% 97%;
+    --card: 220 30% 5%;
+    --card-foreground: 220 30% 97%;
+    --popover: 220 30% 5%;
+    --popover-foreground: 220 30% 97%;
+    --primary: 210 100% 62%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 30% 8%;
+    --secondary-foreground: 220 30% 97%;
+    --muted: 220 20% 15%;
+    --muted-foreground: 210 20% 48%;
+    --accent: 220 30% 8%;
+    --accent-foreground: 220 30% 97%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 220 30% 15%;
+    --input: 220 30% 15%;
+    --ring: 43 100% 62%;
+    --radius: 0.5rem;
+  }
+
+  html {
+    direction: rtl;
+  }
+
+  body {
+    font-family: 'Noto Sans Arabic', sans-serif;
+    background-color: var(--void);
+    color: var(--text);
+    overflow-x: hidden;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    width: 100vw;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--void);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
+  }
+}
+
+@layer components {
+  .font-kufi {
+    font-family: 'Noto Kufi Arabic', sans-serif;
+  }
+
+  .font-nunito {
+    font-family: 'Nunito', sans-serif;
+  }
+
+  .glass {
+    background: rgba(13, 18, 32, 0.85);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+  }
+
+  .neon-glow {
+    box-shadow: 0 0 20px rgba(59, 158, 255, 0.4), 0 0 60px rgba(59, 158, 255, 0.15);
+  }
+
+  .focus-ring {
+    outline: 4px solid var(--gold);
+    outline-offset: 4px;
+    box-shadow: 0 0 20px rgba(255, 190, 61, 0.3);
+  }
+
+  .text-glow-gold {
+    text-shadow: 0 0 20px rgba(255, 190, 61, 0.3);
+  }
+
+  .gradient-overlay {
+    background: linear-gradient(to bottom, rgba(7, 9, 15, 0) 0%, rgba(7, 9, 15, 0.9) 100%);
+  }
+
+  .card-surface {
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+  }
+
+  .card-surface:hover {
+    background: var(--surface-2);
+    border-color: var(--text-muted);
+  }
+
+  .progress-bar {
+    height: 4px;
+    background: linear-gradient(to left, var(--gold), var(--blue));
+    border-radius: 2px;
+    transition: width 0.1s linear;
+  }
+}
+
+@layer utilities {
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .animate-pulse-glow {
+    animation: pulseGlow 3s ease-in-out infinite;
+  }
+
+  .animate-bounce-in {
+    animation: bounceIn 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+  }
+
+  .animate-fade-in-up {
+    animation: fadeInUp 0.5s ease forwards;
+  }
+
+  .animate-scale-in {
+    animation: scaleIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+  }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { text-shadow: 0 0 20px rgba(0, 201, 201, 0.3); }
+  50% { text-shadow: 0 0 40px rgba(0, 201, 201, 0.6); }
+}
+
+@keyframes bounceIn {
+  0% { transform: scale(0); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes fadeInUp {
+  from { transform: translateY(30px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes countPulse {
+  0% { transform: scale(2); opacity: 0; }
+  50% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(0.5); opacity: 0; }
+}
